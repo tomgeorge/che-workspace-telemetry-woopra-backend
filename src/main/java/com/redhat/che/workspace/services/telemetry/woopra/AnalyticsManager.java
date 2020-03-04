@@ -15,6 +15,7 @@ import static com.google.common.collect.ImmutableMap.builder;
 import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_INACTIVE;
 import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_STARTED;
 import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_STOPPED;
+import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_OPENED;
 import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_USED;
 import static org.eclipse.che.incubator.workspace.telemetry.base.EventProperties.WORKSPACE_ID;
 import static org.eclipse.che.incubator.workspace.telemetry.base.EventProperties.WORKSPACE_NAME;
@@ -234,6 +235,7 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
     }
   }
 
+
   public void onEvent(
     AnalyticsEvent event,
     String ownerId,
@@ -241,6 +243,9 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
     String userAgent,
     String resolution,
     Map<String, Object> properties) {
+  if (event == WORKSPACE_OPENED && workspaceStartingUserId == null){
+    event = WORKSPACE_STARTED;
+  }
   if (event == WORKSPACE_STARTED) {
       workspaceStartingUserId = userId;
     }

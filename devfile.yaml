@@ -1,44 +1,17 @@
 metadata:
-  name: telemetry
+  generateName: woopra-backend-
 projects:
-  - name: theia
-    source:
-      location: 'https://github.com/eclipse-theia/theia.git'
-      type: git
-      branch: master
-  - name: che-theia
-    source:
-      location: 'https://github.com/eclipse/che-theia.git'
-      type: git
-      branch: telemetry-plugin-api
-    clonePath: theia/che-theia
-  - name: che-workspace-telemetry-client
-    source:
-      location: 'https://github.com/che-incubator/che-workspace-telemetry-client.git'
-      type: git
   - name: che-workspace-telemetry-woopra-backend
     source:
       location: >-
         https://github.com/redhat-developer/che-workspace-telemetry-woopra-backend.git
       type: git
       branch: master
-attributes:
-  persistVolumes: 'true'
 components:
   - mountSources: true
-    memoryLimit: 4800Mi
-    type: dockerimage
-    alias: theia-dev
-    image: 'docker.io/eclipse/che-theia-dev:next'
-    env:
-      - value: '--max_old_space_size=4608'
-        name: NODE_OPTIONS
-      - value: '4167'
-        name: CHE_WORKSPACE_TELEMETRY_BACKEND_PORT
-  - mountSources: true
     endpoints:
-      - name: 8080/tcp
-        port: 8080
+      - name: 4168/tcp
+        port: 4168
     memoryLimit: 2048Mi
     type: dockerimage
     volumes:
@@ -47,6 +20,10 @@ components:
     alias: maven
     image: 'quay.io/eclipse/che-java8-maven:nightly'
     env:
+      - value: '--max_old_space_size=1500'
+        name: NODE_OPTIONS
+      - value: '4168'
+        name: CHE_WORKSPACE_TELEMETRY_BACKEND_PORT
       - value: >-
           -XX:MaxRAMPercentage=50.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10
           -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4
@@ -55,72 +32,28 @@ components:
         name: JAVA_OPTS
       - value: $(JAVA_OPTS)
         name: MAVEN_OPTS
-      - value: '--max_old_space_size=1500'
-        name: NODE_OPTIONS
       - value: ''
         name: CHE_FABRIC8_ANALYTICS_SEGMENT_WRITE_KEY
       - value: ''
         name: CHE_FABRIC8_ANALYTICS_WOOPRA_DOMAIN
-      - value: '4167'
-        name: CHE_WORKSPACE_TELEMETRY_BACKEND_PORT
-  - id: eclipse/che-machine-exec-plugin/latest
-    type: chePlugin
-  - id: che-incubator/typescript/latest
-    type: chePlugin
-  - id: redhat/java/latest
-    type: chePlugin
+  - id: eclipse/che-theia/next
+    memoryLimit: 1Gi
+    type: cheEditor
+    alias: theia-editor
 apiVersion: 1.0.0
 commands:
-  - name: INIT theia with che-theia
-    actions:
-      - workdir: /projects/theia
-        type: exec
-        command: >-
-          sed -i -e 's:"examples/\*":"examples/*",
-          "che-theia/plugins/telemetry-plugin":' package.json && che:theia init
-          -c che-theia/che-theia-init-sources.yml --alias
-          https://github.com/eclipse/che-theia=./che-theia
-        component: theia-dev
-  - name: BUILD theia
-    actions:
-      - workdir: /projects/theia
-        type: exec
-        command: >-
-          yarn add -D @theia/plugin-packager --ignore-workspace-root-check &&
-          echo -e "\e[32mDone.\e[0m build ... che-theia"
-        component: theia-dev
-  - name: BUILD telemetry plugin
-    actions:
-      - workdir: /projects/theia
-        type: exec
-        command: >-
-          npx run build @eclipse-che/telemetry-plugin && echo -e
-          "\e[32mDone.\e[0m build ... telemetry plugin"
-        component: theia-dev
-  - name: BUILD backend-base
-    actions:
-      - workdir: /projects/che-workspace-telemetry-client
-        type: exec
-        command: >-
-          mvn clean install -pl backend-base &&  echo -e "\e[32mDone.\e[0m build
-          ... backend-base"
-        component: maven
-  - name: COMPILE_RUN woopra-backend
+  - name: BUILD woopra backend
     actions:
       - workdir: /projects/che-workspace-telemetry-woopra-backend
         type: exec
-        command: >-
-          mvn compile quarkus:dev
+        command: mvn --settings settings.xml package
+        component: maven
+  - name: RUN woopra backend
+    actions:
+      - workdir: /projects/che-workspace-telemetry-woopra-backend
+        type: exec
+        command: >
+          mvn --settings settings.xml quarkus:dev
           -Dquarkus.http.port="${CHE_WORKSPACE_TELEMETRY_BACKEND_PORT}"
         component: maven
-  - name: run ... DEV yarn start ... che-theia + telemetry-plugin
-    actions:
-      - workdir: /projects/theia/examples/assembly
-        type: exec
-        command: >-
-          killall node; mkdir -p /tmp/theiadev_projects && export
-          CHE_PROJECTS_ROOT=/tmp/theiadev_projects && export
-          HOSTED_PLUGIN=/projects/theia/che-theia/plugins/telemetry-plugin/ &&
-          echo "Used port = ${CHE_WORKSPACE_TELEMETRY_BACKEND_PORT}" && yarn
-          start /tmp/theiadev_projects --hostname=0.0.0.0 --port=3010
-        component: theia-dev
+

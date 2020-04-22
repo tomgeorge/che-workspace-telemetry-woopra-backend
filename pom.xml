@@ -36,7 +36,7 @@
     <dependency>
       <groupId>org.eclipse.che.incubator.workspace-telemetry</groupId>
       <artifactId>backend-base</artifactId>
-      <version>0.0.7</version>
+      <version>0.0.11</version>
     </dependency>
     <dependency>
       <groupId>org.reflections</groupId>

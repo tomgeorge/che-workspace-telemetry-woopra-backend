@@ -38,6 +38,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +46,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
@@ -297,7 +299,8 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
               new SimpleImmutableEntry<>(EventProperties.LAST_WORKSPACE_FAILURE, lastErrorMessage),
               new SimpleImmutableEntry<>(EventProperties.OSIO_SPACE_ID, osioSpaceId),
               new SimpleImmutableEntry<>(EventProperties.SOURCE_TYPES, sourceTypes),
-              new SimpleImmutableEntry<>(EventProperties.START_NUMBER, startNumber))
+              new SimpleImmutableEntry<>(EventProperties.START_NUMBER, startNumber),
+              new SimpleImmutableEntry<>(EventProperties.PLUGINS, makePluginString(manager.pluginNames)))
           .forEach(
               (entry) -> {
                 if (entry.getValue() != null) {
@@ -316,6 +319,10 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
 
     void onActivity() {
       lastActivityTime = System.currentTimeMillis();
+    }
+
+    private String makePluginString(List<String> pluginNames) {
+      return pluginNames.stream().collect(Collectors.joining(", "));
     }
 
     void sendPingRequest(boolean retrying) {

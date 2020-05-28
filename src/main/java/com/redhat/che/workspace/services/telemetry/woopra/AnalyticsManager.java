@@ -11,16 +11,10 @@
  */
 package com.redhat.che.workspace.services.telemetry.woopra;
 
-import static com.google.common.collect.ImmutableMap.builder;
-import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_INACTIVE;
-import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_STARTED;
-import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_STOPPED;
-import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_OPENED;
-import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_USED;
-import static org.eclipse.che.incubator.workspace.telemetry.base.EventProperties.WORKSPACE_ID;
-import static org.eclipse.che.incubator.workspace.telemetry.base.EventProperties.WORKSPACE_NAME;
-import static java.lang.Long.parseLong;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_INACTIVE;
+import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_STOPPED;
+import static org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent.WORKSPACE_USED;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.BufferedReader;
@@ -51,12 +45,12 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.eclipse.che.incubator.workspace.telemetry.base.AbstractAnalyticsManager;
-import org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.TrackMessage;
 
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
+import org.eclipse.che.incubator.workspace.telemetry.base.AbstractAnalyticsManager;
+import org.eclipse.che.incubator.workspace.telemetry.base.AnalyticsEvent;
 import org.slf4j.Logger;
 
 /**
@@ -74,6 +68,9 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
 
   String segmentWriteKey;
   String woopraDomain;
+
+  protected ScheduledExecutorService checkActivityExecutor = Executors
+      .newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("Analytics Activity Checker").build());
 
   @VisibleForTesting
   ScheduledExecutorService networkExecutor = Executors.newSingleThreadScheduledExecutor(
@@ -116,6 +113,18 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
     } else {
       analytics = null;
     }
+
+    long checkActivityPeriod = pingTimeoutSeconds / 2;
+
+    checkActivityExecutor.scheduleAtFixedRate(this::checkActivity, checkActivityPeriod, checkActivityPeriod, SECONDS);
+
+    dispatchers = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.HOURS).maximumSize(10)
+        .removalListener((RemovalNotification<String, EventDispatcher> n) -> {
+          EventDispatcher dispatcher = n.getValue();
+          if (dispatcher != null) {
+            dispatcher.close();
+          }
+        }).build(CacheLoader.<String, EventDispatcher>from(userId -> newEventDispatcher(userId)));
   }
 
   private EventDispatcher newEventDispatcher(String userId) {

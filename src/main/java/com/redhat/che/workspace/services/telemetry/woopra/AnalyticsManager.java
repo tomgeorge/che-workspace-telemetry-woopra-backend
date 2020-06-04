@@ -147,7 +147,7 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
       LOG.debug("Checking activity of dispatcher for user: {}", dispatcher.getUserId());
       if (dispatcher.getLastActivityTime() < inactiveLimit) {
         LOG.debug("Sending 'WORKSPACE_INACTIVE' event for user: {}", dispatcher.getUserId());
-        if (dispatcher.sendTrackEvent(WORKSPACE_INACTIVE, getCommonProperties(), dispatcher.getLastIp(),
+        if (dispatcher.sendTrackEvent(WORKSPACE_INACTIVE, getCurrentEventProperties(), dispatcher.getLastIp(),
             dispatcher.getLastUserAgent(), dispatcher.getLastResolution()) != null) {
           LOG.debug("Sent 'WORKSPACE_INACTIVE' event for user: {}", dispatcher.getUserId());
           return;
@@ -166,7 +166,7 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
         long expectedDuration = lastEvent.getExpectedDurationSeconds() * 1000;
         if (lastEvent == WORKSPACE_INACTIVE || (expectedDuration >= 0
             && System.currentTimeMillis() > expectedDuration + dispatcher.getLastEventTime())) {
-          dispatcher.sendTrackEvent(WORKSPACE_USED, getCommonProperties(), dispatcher.getLastIp(),
+          dispatcher.sendTrackEvent(WORKSPACE_USED, getCurrentEventProperties(), dispatcher.getLastIp(),
               dispatcher.getLastUserAgent(), dispatcher.getLastResolution());
         }
       }
@@ -380,14 +380,11 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
   }
 
   public void destroy() {
-    LOG.info("onDestroy startingUsedId " + getUserId());
     if (getUserId() != null) {
       EventDispatcher dispatcher;
       try {
-        LOG.info("sending WORKSPACE_STOPPED event");
         dispatcher = dispatchers.get(getUserId());
-
-        dispatcher.sendTrackEvent(WORKSPACE_STOPPED, commonProperties, dispatcher.getLastIp(), dispatcher.getLastUserAgent(), dispatcher.getLastResolution());
+        dispatcher.sendTrackEvent(WORKSPACE_STOPPED, getCurrentEventProperties(), dispatcher.getLastIp(), dispatcher.getLastUserAgent(), dispatcher.getLastResolution());
       } catch (ExecutionException e) {
       }
     }

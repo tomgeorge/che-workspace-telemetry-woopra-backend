@@ -147,7 +147,7 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
       LOG.debug("Checking activity of dispatcher for user: {}", dispatcher.getUserId());
       if (dispatcher.getLastActivityTime() < inactiveLimit) {
         LOG.debug("Sending 'WORKSPACE_INACTIVE' event for user: {}", dispatcher.getUserId());
-        if (dispatcher.sendTrackEvent(WORKSPACE_INACTIVE, getCurrentEventProperties(), dispatcher.getLastIp(),
+        if (dispatcher.sendTrackEvent(WORKSPACE_INACTIVE, commonProperties, dispatcher.getLastIp(),
             dispatcher.getLastUserAgent(), dispatcher.getLastResolution()) != null) {
           LOG.debug("Sent 'WORKSPACE_INACTIVE' event for user: {}", dispatcher.getUserId());
           return;
@@ -166,7 +166,7 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
         long expectedDuration = lastEvent.getExpectedDurationSeconds() * 1000;
         if (lastEvent == WORKSPACE_INACTIVE || (expectedDuration >= 0
             && System.currentTimeMillis() > expectedDuration + dispatcher.getLastEventTime())) {
-          dispatcher.sendTrackEvent(WORKSPACE_USED, getCurrentEventProperties(), dispatcher.getLastIp(),
+          dispatcher.sendTrackEvent(WORKSPACE_USED, commonProperties, dispatcher.getLastIp(),
               dispatcher.getLastUserAgent(), dispatcher.getLastResolution());
         }
       }
@@ -384,7 +384,7 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
       EventDispatcher dispatcher;
       try {
         dispatcher = dispatchers.get(getUserId());
-        dispatcher.sendTrackEvent(WORKSPACE_STOPPED, getCurrentEventProperties(), dispatcher.getLastIp(), dispatcher.getLastUserAgent(), dispatcher.getLastResolution());
+        dispatcher.sendTrackEvent(WORKSPACE_STOPPED, commonProperties, dispatcher.getLastIp(), dispatcher.getLastUserAgent(), dispatcher.getLastResolution());
       } catch (ExecutionException e) {
       }
     }

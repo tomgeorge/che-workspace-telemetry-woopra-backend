@@ -93,7 +93,6 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
         String endpoint = apiEndpoint + "/fabric8-che-analytics/segment-write-key";
         segmentWriteKey = requestFactory.fromUrl(endpoint).request().asString();
       }
-
       if (woopraDomain == null) {
         String endpoint = apiEndpoint + "/fabric8-che-analytics/woopra-domain";
         woopraDomain = requestFactory.fromUrl(endpoint).request().asString();
@@ -190,6 +189,9 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
     }
     ;
   }
+
+  @Override
+  public void increaseDuration(AnalyticsEvent event, Map<String, Object> properties) {}
 
   @VisibleForTesting
   class EventDispatcher {

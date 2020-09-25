@@ -115,6 +115,11 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.che.core</groupId>
       <artifactId>che-core-api-workspace-shared</artifactId>
       <version>7.0.0-rc-4.0</version>

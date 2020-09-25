@@ -16,8 +16,15 @@ public class MainConfiguration extends BaseConfiguration {
     @ConfigProperty(name = "che.fabric8.analytics.woopra_domain")
     Optional<String> woopraDomain;
 
+    @ConfigProperty(name = "woopra.domain.endpoint")
+    String woopraDomainEndpoint;
+
+    @ConfigProperty(name = "woopra.write.key")
+    String woopraWriteKey;
+
+
     @Produces
     public AbstractAnalyticsManager analyticsManager() {
-      return new AnalyticsManager(segmentWriteKey.orElse(null), woopraDomain.orElse(null), apiEndpoint, workspaceId, machineToken, requestFactory(), new AnalyticsProvider(), new HttpUrlConnectionProvider());
+      return new AnalyticsManager(segmentWriteKey.orElse(null), woopraDomain.orElse(null), woopraDomainEndpoint, woopraWriteKey, apiEndpoint, workspaceId, machineToken, requestFactory(), new AnalyticsProvider(), new HttpUrlConnectionProvider());
     }
 }

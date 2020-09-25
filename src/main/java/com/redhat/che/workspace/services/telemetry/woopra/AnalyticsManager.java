@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2016-2018 Red Hat, Inc.
  * This program and the accompanying materials are made
@@ -68,6 +69,8 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
 
   String segmentWriteKey;
   String woopraDomain;
+  String woopraDomainEndpoint;
+  String woopraWriteKeyEndpoint;
 
   protected ScheduledExecutorService checkActivityExecutor = Executors
       .newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("Analytics Activity Checker").build());
@@ -82,20 +85,21 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
   @VisibleForTesting
   HttpUrlConnectionProvider httpUrlConnectionProvider = null;
 
-  public AnalyticsManager(String defaultSegmentWriteKey, String defaultWoopraDomain, String apiEndpoint,
-      String workspaceId, String machineToken, HttpJsonRequestFactory requestFactory,
-      AnalyticsProvider analyticsProvider, HttpUrlConnectionProvider httpUrlConnectionProvider) {
+  public AnalyticsManager(String defaultSegmentWriteKey, String defaultWoopraDomain, String woopraDomainEndpoint,
+      String woopraWriteKeyEndpoint, String apiEndpoint, String workspaceId, String machineToken,
+      HttpJsonRequestFactory requestFactory, AnalyticsProvider analyticsProvider,
+      HttpUrlConnectionProvider httpUrlConnectionProvider) {
     super(apiEndpoint, workspaceId, machineToken, requestFactory);
+    this.woopraDomainEndpoint = woopraDomainEndpoint;
+    this.woopraWriteKeyEndpoint = woopraWriteKeyEndpoint;
     segmentWriteKey = defaultSegmentWriteKey;
     woopraDomain = defaultWoopraDomain;
     try {
       if (segmentWriteKey == null) {
-        String endpoint = apiEndpoint + "/fabric8-che-analytics/segment-write-key";
-        segmentWriteKey = requestFactory.fromUrl(endpoint).request().asString();
+        segmentWriteKey = requestFactory.fromUrl(woopraWriteKeyEndpoint).request().asString();
       }
       if (woopraDomain == null) {
-        String endpoint = apiEndpoint + "/fabric8-che-analytics/woopra-domain";
-        woopraDomain = requestFactory.fromUrl(endpoint).request().asString();
+        woopraDomain = requestFactory.fromUrl(woopraDomainEndpoint).request().asString();
       }
     } catch (Exception e) {
       throw new RuntimeException("Can't get Che analytics settings from wsmaster", e);
@@ -191,7 +195,8 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
   }
 
   @Override
-  public void increaseDuration(AnalyticsEvent event, Map<String, Object> properties) {}
+  public void increaseDuration(AnalyticsEvent event, Map<String, Object> properties) {
+  }
 
   @VisibleForTesting
   class EventDispatcher {
@@ -386,7 +391,8 @@ public class AnalyticsManager extends AbstractAnalyticsManager {
       EventDispatcher dispatcher;
       try {
         dispatcher = dispatchers.get(getUserId());
-        dispatcher.sendTrackEvent(WORKSPACE_STOPPED, commonProperties, dispatcher.getLastIp(), dispatcher.getLastUserAgent(), dispatcher.getLastResolution());
+        dispatcher.sendTrackEvent(WORKSPACE_STOPPED, commonProperties, dispatcher.getLastIp(),
+            dispatcher.getLastUserAgent(), dispatcher.getLastResolution());
       } catch (ExecutionException e) {
       }
     }

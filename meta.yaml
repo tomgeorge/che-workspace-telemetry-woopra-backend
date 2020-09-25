@@ -1,7 +1,7 @@
 apiVersion: v2
 publisher: redhat-developer
 name: che-workspace-telemetry-woopra-backend
-version: 0.0.1
+version: 0.0.2
 type: Che Plugin
 displayName: Woopra Telemetry Backend
 description: Telemetry plugin to send information to Woopra
@@ -21,4 +21,8 @@ spec:
         value: ''
       - name: CHE_FABRIC8_ANALYTICS_SEGMENT_WRITE_KEY
         value: ''
+      - name: WOOPRA_DOMAIN_ENDPOINT
+        value: $CHE_API/fabric8-che-analytics/woopra-domain
+      - name: SEGMENT_WRITE_KEY_ENDPOINT
+        value: $CHE_API/fabric8-che-analytics/segment-write-key
 

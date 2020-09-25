@@ -5,8 +5,8 @@
    <servers>
       <server>
          <id>che-incubator</id>
-         <username>${env.GITHUB_USERNAME}</username>
-         <password>${env.GITHUB_TOKEN}</password>
+         <username>tomgeorge</username>
+         <password>821a8deb9942c46daf811f2b2c30a3867b10cee2</password>
       </server>
    </servers>
 

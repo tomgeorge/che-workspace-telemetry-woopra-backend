@@ -1,3 +1,5 @@
+This plugin has been deprecated, and future development will be focused on [che-incubator/che-workspace-telemetry-woopra-plugin](https://github.com/che-incubator/che-workspace-telemetry-woopra-plugin)
+
 [![Master Build Status](https://ci.centos.org/buildStatus/icon?subject=master&job=devtools-che-workspace-telemetry-woopra-backend-build-master/)](https://ci.centos.org/view/Devtools/job/devtools-che-workspace-telemetry-woopra-backend-build-master/)
 [![Nightly Build Status](https://ci.centos.org/buildStatus/icon?subject=nightly&job=devtools-che-workspace-telemetry-woopra-backend-che-nightly/)](https://ci.centos.org/view/Devtools/job/devtools-che-workspace-telemetry-woopra-backend-che-nightly/)
 
